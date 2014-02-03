@@ -46,6 +46,7 @@
 
 -record(state, {name :: atom(),
                 window = 0 :: pos_integer(),
+                reservoir  :: pos_integer(),
                 before = 0 :: pos_integer()
                }).
 
@@ -98,7 +99,8 @@ trim(Name, Tid, Window) ->
 %% Description: Initiates the server
 init([Name, Window]) ->
     Spiral = #spiral{},
-    Pid = svdba_sup:start_slide_server(?MODULE, Name, Spiral#spiral.tid, Window),
+    Reservoir = Spiral#spiral.tid,
+    Pid = svdba_sup:start_slide_server(?MODULE, Name, Reservoir, Window),
     ok = folsom_ets:add_handler(spiral, Name),
 
     case ets:insert_new(Spiral#spiral.tid,
@@ -107,7 +109,8 @@ init([Name, Window]) ->
             case ets:insert(?SPIRAL_TABLE, {Name, Spiral#spiral{server = Pid}}) of
                 true ->
                     {ok, #state{name = Name,
-                                window = Window}};
+                                window = Window,
+                                reservoir = Reservoir}};
                 _ ->
                     {stop, ?ERROR_ETS_NOT_AVAILABLE}
             end;
@@ -119,21 +122,20 @@ handle_call(stop, _From, State) ->
     {stop, shutdown, ok, State};
 
 
-handle_call(get_values, _From, #state{name = Name,
-                                      window = Window} = State) ->
-    Reply = get_values_1(Name, Window),
+handle_call(get_values, _From, #state{window = Window,
+                                      reservoir = Tid} = State) ->
+    Reply = get_values_1(Tid, Window),
     {reply, Reply, State};
 
-handle_call({update, Value}, _From, #state{name = Name} = State) ->
-    #spiral{tid=Tid} = get_value(Name),
+handle_call({update, Value}, _From, #state{reservoir = Tid} = State) ->
     Moment = folsom_utils:now_epoch(),
     X = erlang:system_info(scheduler_id),
     Rnd = X band (?DEF_WIDTH - 1),
-    folsom_utils:update_counter(Tid, {Moment, Rnd}, Value),
+    _ = folsom_utils:update_counter(Tid, {Moment, Rnd}, Value),
     Reply = ets:update_counter(Tid, {count, Rnd}, Value),
     {reply, Reply, State};
 
-handle_call({trim, Tid, Window}, _From, #state{name = Name} = State) ->
+handle_call({trim, Tid, Window}, _From, State) ->
     Oldest = folsom_utils:now_epoch() - Window,
     _ = ets:select_delete(Tid, [{{{'$1','_'},'_'},
                                  [{is_integer, '$1'},
@@ -141,7 +143,7 @@ handle_call({trim, Tid, Window}, _From, #state{name = Name} = State) ->
                                  ['true']}]),
 
     %% @TODO - retrieve the current value
-    Current = get_values_1(Name, Window),
+    Current = get_values_1(Tid, Window),
     ?debugVal(Current),
 
     {reply, ok, State#state{before = Oldest}}.
@@ -179,20 +181,14 @@ code_change(_OldVsn, State, _Extra) ->
 %%--------------------------------------------------------------------
 %%% INNER FUNCTIONS
 %%--------------------------------------------------------------------
-%% @private
-get_value(Name) ->
-    [{Name, Spiral}] =  ets:lookup(?SPIRAL_TABLE, Name),
-    Spiral.
-
 
 %% @private
-get_values_1(Name, Window) ->
+get_values_1(Tid, Window) ->
     Oldest = folsom_utils:now_epoch() - Window,
-    #spiral{tid=Tid} = get_value(Name),
-
     Count = lists:sum(ets:select(Tid, [{{{count,'_'},'$1'},[],['$1']}])),
     One   = lists:sum(ets:select(Tid, [{{{'$1','_'},'$2'},
                                         [{is_integer, '$1'},
                                          {'>=', '$1', Oldest}],
                                         ['$2']}])),
     {ok, [{count, Count}, {one, One}]}.
+

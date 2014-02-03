@@ -24,4 +24,9 @@
 -type(svdba_schema() :: atom()).
 -type(svdba_keyval() :: {atom(), any()}).
 
--define(ERROR_ETS_NOT_AVAILABLE, "").
+-define(ERROR_ETS_NOT_AVAILABLE, "ETS is not available").
+
+-define(METRIC_COUNTER,   'counter').
+-define(METRIC_HISTOGRAM, 'histogram').
+-type(svdba_metric_type() :: ?METRIC_COUNTER | ?METRIC_HISTOGRAM).
+

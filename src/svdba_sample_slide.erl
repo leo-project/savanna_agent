@@ -26,6 +26,7 @@
 
 -export([update/2,
          get_values/1,
+         get_histogram_statistics/1,
          resize/2,
          trim/3
         ]).
@@ -40,7 +41,7 @@
 -record(state, {name :: atom(),
                 window = 0 :: pos_integer(),
                 server     :: pid(),
-                reservoir  :: pid(),
+                reservoir  :: pos_integer(),
                 before = 0 :: pos_integer()
                }).
 
@@ -72,6 +73,10 @@ stop(Name) ->
 
 get_values(Name) ->
     gen_server:call(Name, get_values).
+
+
+get_histogram_statistics(Name) ->
+    gen_server:call(Name, get_histogram_statistics).
 
 
 update(Name, Value) ->
@@ -117,6 +122,12 @@ handle_call(get_values, _From, #state{window = Window,
                                       reservoir = Tid} = State) ->
     Reply = get_values_1(Tid, Window),
     {reply, Reply, State};
+
+handle_call(get_histogram_statistics, _From, #state{window = Window,
+                                                    reservoir = Tid} = State) ->
+    {ok, Values} = get_values_1(Tid, Window),
+    Current = bear:get_statistics(Values),
+    {reply, {ok, Current}, State};
 
 handle_call({update, Value}, _From, #state{reservoir = Reservoir} = State) ->
     Moment = folsom_utils:now_epoch(),
