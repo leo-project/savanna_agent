@@ -1,4 +1,3 @@
-%% -*- mode: erlang;erlang-indent-level: 4;indent-tabs-mode: nil -*-
 %%======================================================================
 %%
 %% LeoProject - SavannaDB Agent
@@ -20,15 +19,19 @@
 %% under the License.
 %%
 %%======================================================================
-{application, svdba,
- [
-  {description, "SavannaDB Agent"},
-  {vsn, "0.2.0"},
-  {registered, []},
-  {applications, [
-                  kernel,
-                  stdlib
-                 ]},
-  {mod, { svdba_app, []}},
-  {env, []}
- ]}.
+-module(savannadb_agent).
+
+-export([]).
+
+-include("savannadb_agent.hrl").
+-include_lib("eunit/include/eunit.hrl").
+
+
+%% ===================================================================
+%% API
+%% ===================================================================
+
+
+%% ===================================================================
+%% Inner Functions
+%% ===================================================================

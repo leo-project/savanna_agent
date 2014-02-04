@@ -1,6 +1,6 @@
 %%======================================================================
 %%
-%% LeoProject - SavannaDB Agent
+%% LeoProject - SavannaDB
 %%
 %% Copyright (c) 2014 Rakuten, Inc.
 %%
@@ -19,20 +19,4 @@
 %% under the License.
 %%
 %%======================================================================
--module(svdba_app).
-
--behaviour(application).
-
-%% Application callbacks
--export([start/2, stop/1]).
-
-%% ===================================================================
-%% Application callbacks
-%% ===================================================================
-
-start(_StartType, _StartArgs) ->
-    application:start(folsom),
-    svdba_sup:start_link().
-
-stop(_State) ->
-    ok.
+-author('Yosuke Hara').

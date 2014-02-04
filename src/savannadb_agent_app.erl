@@ -1,4 +1,3 @@
-%% -*- mode: erlang;erlang-indent-level: 4;indent-tabs-mode: nil -*-
 %%======================================================================
 %%
 %% LeoProject - SavannaDB Agent
@@ -20,19 +19,20 @@
 %% under the License.
 %%
 %%======================================================================
-{require_otp_vsn, "R15B03|R16B|R16B01|R16B02|R16B03|R16B03-1"}.
+-module(savannadb_agent_app).
 
-{deps, [
-        {savannadb_commons, ".*", {git, "https://github.com/leo-incubator/savannadb_commons.git", {branch, "develop"}}},
-        {leo_rpc,           ".*", {git, "https://github.com/leo-project/leo_rpc.git",             {branch, "develop"}}}
-       ]}.
+-behaviour(application).
 
-{erl_opts, [{d, 'NOTEST'},
-            warn_obsolete_guard,
-            warnings_as_errors,
-            warn_shadow_vars,
-            warn_export_vars,
-            warn_export_all]}.
-{xref_checks, [undefined_function_calls]}.
-{cover_enabled, true}.
-{clean_files, []}.
+%% Application callbacks
+-export([start/2, stop/1]).
+
+%% ===================================================================
+%% Application callbacks
+%% ===================================================================
+
+start(_StartType, _StartArgs) ->
+    application:start(folsom),
+    savannadb_agent_sup:start_link().
+
+stop(_State) ->
+    ok.

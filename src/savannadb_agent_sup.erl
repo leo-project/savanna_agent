@@ -19,12 +19,12 @@
 %% under the License.
 %%
 %%======================================================================
--module(svdba_sup).
+-module(savannadb_agent_sup).
 
 -behaviour(supervisor).
 
 %% API
--export([start_link/0, start_slide_server/4]).
+-export([start_link/0]).
 
 %% Supervisor callbacks
 -export([init/1]).
@@ -39,16 +39,8 @@
 start_link() ->
     supervisor:start_link({local, ?MODULE}, ?MODULE, []).
 
-start_slide_server(SampleMod, ServerId, Reservoir, Window) ->
-    {ok, Pid} = supervisor:start_child(?MODULE, [SampleMod, ServerId, Reservoir, Window]),
-    Pid.
-
 %% ===================================================================
 %% Supervisor callbacks
 %% ===================================================================
 init([]) ->
-    {ok,{{simple_one_for_one, 3, 180},
-         [
-          {undefined, {svdba_sample_slide_server, start_link, []},
-           transient, brutal_kill, worker, [svdba_sample_slide_server]}
-         ]}}.
+    {ok, []}.

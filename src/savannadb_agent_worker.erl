@@ -19,7 +19,7 @@
 %% under the License.
 %%
 %%======================================================================
--module(svdba_worker).
+-module(savannadb_agent_worker).
 -author('Yosuke Hara').
 
 -behaviour(gen_server).
