@@ -23,6 +23,9 @@
 
 -behaviour(application).
 
+-include("savannadb_agent.hrl").
+-include_lib("eunit/include/eunit.hrl").
+
 %% Application callbacks
 -export([start/2, stop/1]).
 
@@ -31,8 +34,18 @@
 %% ===================================================================
 
 start(_StartType, _StartArgs) ->
-    application:start(folsom),
-    savannadb_agent_sup:start_link().
+    catch mnesia:start(),
+    Ret = savannadb_agent_sup:start_link(),
+    after_proc(Ret).
 
 stop(_State) ->
     ok.
+
+
+%% @private
+after_proc({ok,_Pid} = Ret) ->
+    %% Create schema-tables
+    Type = ?env_table_replica_of_type(),
+    {atomic,ok} = svdbc_tbl_schema:create_table(Type, [node()]),
+    {atomic,ok} = svdbc_tbl_column:create_table(Type, [node()]),
+    Ret.

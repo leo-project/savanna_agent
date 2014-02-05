@@ -23,14 +23,15 @@
 
 -behaviour(supervisor).
 
+-include("savannadb_agent.hrl").
+-include_lib("eunit/include/eunit.hrl").
+
 %% API
 -export([start_link/0]).
 
 %% Supervisor callbacks
 -export([init/1]).
 
-%% Helper macro for declaring children of supervisor
--define(CHILD(I, Type), {I, {I, start_link, []}, permanent, 5000, Type, [I]}).
 
 %% ===================================================================
 %% API functions
@@ -43,4 +44,22 @@ start_link() ->
 %% Supervisor callbacks
 %% ===================================================================
 init([]) ->
-    {ok, []}.
+    Children = [
+                {folsom,
+                 {folsom_sup, start_link, []},
+                 permanent,
+                 2000,
+                 supervisor,
+                 [folsom]},
+
+                {savannadb_agent_worker,
+                 {savannadb_agent_worker, start_link,
+                  [?env_table_sync_interval(),
+                   ?env_svdb_manager_nodes()
+                  ]},
+                 permanent,
+                 2000,
+                 worker,
+                 [savannadb_agent_worker]}
+               ],
+    {ok, { {one_for_one, 5, 60}, Children}}.

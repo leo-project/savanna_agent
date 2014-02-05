@@ -24,10 +24,12 @@
 
 -behaviour(gen_server).
 
+-include("savannadb_agent.hrl").
 -include_lib("eunit/include/eunit.hrl").
 
+
 %% API
--export([start_link/1,
+-export([start_link/2,
          stop/0]).
 
 -export([init/1,
@@ -37,15 +39,18 @@
          terminate/2,
          code_change/3]).
 
--record(state, {window = 0 :: integer()}).
+-record(state, {sync_interval = ?DEF_SYNC_INTERVAL :: integer(),
+                managers = [] :: svdba_managers()
+               }).
 
 %%--------------------------------------------------------------------
 %% API
 %%--------------------------------------------------------------------
 %% Function: start_link() -> {ok,Pid} | ignore | {error,Error}
 %% Description: Starts the server
-start_link(Window) ->
-    gen_server:start_link({local, ?MODULE}, ?MODULE, [Window], []).
+start_link(SyncInterval, ManagerNodes) ->
+    gen_server:start_link({local, ?MODULE}, ?MODULE,
+                          [SyncInterval, ManagerNodes], []).
 
 
 stop() ->
@@ -60,8 +65,9 @@ stop() ->
 %%                         ignore               |
 %%                         {stop, Reason}
 %% Description: Initiates the server
-init([Window]) ->
-    {ok, #state{window = Window}}.
+init([SyncInterval, ManagerNodes]) ->
+    {ok, #state{sync_interval = SyncInterval,
+                managers      = ManagerNodes}, SyncInterval}.
 
 handle_call({status}, _From, State) ->
     {reply, {ok, []}, State};
@@ -79,6 +85,29 @@ handle_cast(_Msg, State) ->
 %% Description: Handling all non call/cast messages
 %% handle_info({_Label, {_From, MRef}, get_modules}, State) ->
 %%     {noreply, State};
+handle_info(timeout, State=#state{sync_interval = SyncInterval,
+                                  managers = ManagerNodes}) ->
+    ?debugVal({timeout, SyncInterval, ManagerNodes}),
+    case ManagerNodes of
+        [] ->
+            void;
+        _ ->
+            %% Check and Sync schema-table
+            ChecksumSchema_1 = svdbc_tbl_schema:checksum(),
+            ChecksumSchema_2 = get_tbl_schema_checksum(ManagerNodes),
+            Schemas = case (ChecksumSchema_1 /= ChecksumSchema_2 andalso
+                            ChecksumSchema_2 > 0) of
+                          true ->
+                              sync_tbl_schema(ManagerNodes);
+                          false ->
+                              []
+                      end,
+
+            %% Check and Sync column-table
+            NotMatchSchemas = check_checksum_of_columns(Schemas),
+            sync_columns(NotMatchSchemas)
+    end,
+    {noreply, State, SyncInterval};
 handle_info(_Info, State) ->
     {noreply, State}.
 
@@ -101,3 +130,60 @@ code_change(_OldVsn, State, _Extra) ->
 %%--------------------------------------------------------------------
 %%% INNER FUNCTIONS
 %%--------------------------------------------------------------------
+%% @doc Retrieve checksum of schema-table from svdb-manager(s)
+%% @private
+get_tbl_schema_checksum([]) ->
+    -1;
+get_tbl_schema_checksum([Node|Rest]) ->
+    case leo_rpc:call(Node, svdbc_tbl_schema, checksum, []) of
+        {badrpc,_Cause} ->
+            get_tbl_schema_checksum(Rest);
+        timeout ->
+            get_tbl_schema_checksum(Rest);
+        Checksum ->
+            Checksum
+    end.
+
+%% @doc Synchronize schema-table
+%% @private
+sync_tbl_schema([]) ->
+    [];
+sync_tbl_schema([Node|Rest]) ->
+    case leo_rpc:call(Node, svdbc_tbl_schema, all, []) of
+        {ok, Schemas} ->
+            case update_tbl_schema(Schemas) of
+                ok -> Schemas;
+                _ -> []
+            end;
+        _ ->
+            sync_tbl_schema(Rest)
+    end.
+
+
+%% @doc Update schema-table
+%% @private
+update_tbl_schema([]) ->
+    ok;
+update_tbl_schema([Schema|Rest]) ->
+    case svdbc_tbl_schema:update(Schema) of
+        ok ->
+            update_tbl_schema(Rest);
+        Error ->
+            Error
+    end.
+
+
+%% @doc Check checksum of column-table
+%% @private
+check_checksum_of_columns([]) ->
+    ok;
+check_checksum_of_columns([_Schema|_Rest]) ->
+    ok.
+
+
+%% @doc Synchronize column-table`
+%% @private
+sync_columns([]) ->
+    ok;
+sync_columns([_Schema|_Rest]) ->
+    ok.
