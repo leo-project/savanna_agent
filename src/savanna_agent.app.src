@@ -1,6 +1,7 @@
+%% -*- mode: erlang;erlang-indent-level: 4;indent-tabs-mode: nil -*-
 %%======================================================================
 %%
-%% LeoProject - SavannaDB Agent
+%% LeoProject - Savanna Agent
 %%
 %% Copyright (c) 2014 Rakuten, Inc.
 %%
@@ -19,19 +20,15 @@
 %% under the License.
 %%
 %%======================================================================
--module(savannadb_agent).
-
--export([]).
-
--include("savannadb_agent.hrl").
--include_lib("eunit/include/eunit.hrl").
-
-
-%% ===================================================================
-%% API
-%% ===================================================================
-
-
-%% ===================================================================
-%% Inner Functions
-%% ===================================================================
+{application, savanna_agent,
+ [
+  {description, "Savanna Agent"},
+  {vsn, "0.2.0"},
+  {registered, []},
+  {applications, [
+                  kernel,
+                  stdlib
+                 ]},
+  {mod, { savanna_agent_app, []}},
+  {env, []}
+ ]}.

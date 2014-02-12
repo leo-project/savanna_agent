@@ -1,6 +1,6 @@
 %%======================================================================
 %%
-%% LeoProject - SavannaDB Agent
+%% LeoProject - Savanna Agent
 %%
 %% Copyright (c) 2014 Rakuten, Inc.
 %%
@@ -19,11 +19,11 @@
 %% under the License.
 %%
 %%======================================================================
--module(savannadb_agent_app).
+-module(savanna_agent_app).
 
 -behaviour(application).
 
--include("savannadb_agent.hrl").
+-include("savanna_agent.hrl").
 -include_lib("eunit/include/eunit.hrl").
 
 %% Application callbacks
@@ -35,7 +35,7 @@
 
 start(_StartType, _StartArgs) ->
     catch mnesia:start(),
-    Ret = savannadb_agent_sup:start_link(),
+    Ret = savanna_agent_sup:start_link(),
     after_proc(Ret).
 
 stop(_State) ->
@@ -46,6 +46,6 @@ stop(_State) ->
 after_proc({ok,_Pid} = Ret) ->
     %% Create schema-tables
     Type = ?env_table_replica_of_type(),
-    {atomic,ok} = svdbc_tbl_schema:create_table(Type, [node()]),
-    {atomic,ok} = svdbc_tbl_column:create_table(Type, [node()]),
+    {atomic,ok} = svc_tbl_schema:create_table(Type, [node()]),
+    {atomic,ok} = svc_tbl_column:create_table(Type, [node()]),
     Ret.

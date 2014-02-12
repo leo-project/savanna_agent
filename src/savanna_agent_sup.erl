@@ -1,8 +1,8 @@
 %%======================================================================
 %%
-%% LeoProject - SavannaDB Agent
+%% LeoProject - Savanna Agent
 %%
-%% Copyright (c) 2013-2014 Rakuten, Inc.
+%% Copyright (c) 2014 Rakuten, Inc.
 %%
 %% This file is provided to you under the Apache License,
 %% Version 2.0 (the "License"); you may not use this file
@@ -19,11 +19,11 @@
 %% under the License.
 %%
 %%======================================================================
--module(savannadb_agent_sup).
+-module(savanna_agent_sup).
 
 -behaviour(supervisor).
 
--include("savannadb_agent.hrl").
+-include("savanna_agent.hrl").
 -include_lib("eunit/include/eunit.hrl").
 
 %% API
@@ -52,14 +52,14 @@ init([]) ->
                  supervisor,
                  [folsom]},
 
-                {savannadb_agent_worker,
-                 {savannadb_agent_worker, start_link,
+                {savanna_agent_worker,
+                 {savanna_agent_worker, start_link,
                   [?env_table_sync_interval(),
                    ?env_svdb_manager_nodes()
                   ]},
                  permanent,
                  2000,
                  worker,
-                 [savannadb_agent_worker]}
+                 [savanna_agent_worker]}
                ],
     {ok, { {one_for_one, 5, 60}, Children}}.

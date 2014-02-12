@@ -1,6 +1,6 @@
 %%======================================================================
 %%
-%% LeoProject - SavannaDB Agent
+%% LeoProject - Savanna Agent
 %%
 %% Copyright (c) 2013-2014 Rakuten, Inc.
 %%
@@ -19,12 +19,12 @@
 %% under the License.
 %%
 %%======================================================================
--module(savannadb_agent_worker).
+-module(savanna_agent_worker).
 -author('Yosuke Hara').
 
 -behaviour(gen_server).
 
--include("savannadb_agent.hrl").
+-include("savanna_agent.hrl").
 -include_lib("eunit/include/eunit.hrl").
 
 
@@ -40,7 +40,7 @@
          code_change/3]).
 
 -record(state, {sync_interval = ?DEF_SYNC_INTERVAL :: integer(),
-                managers = [] :: svdba_managers()
+                managers = [] :: sva_managers()
                }).
 
 %%--------------------------------------------------------------------
@@ -93,7 +93,7 @@ handle_info(timeout, State=#state{sync_interval = SyncInterval,
             void;
         _ ->
             %% Check and Sync schema-table
-            ChecksumSchema_1 = svdbc_tbl_schema:checksum(),
+            ChecksumSchema_1 = svc_tbl_schema:checksum(),
             ChecksumSchema_2 = get_tbl_schema_checksum(ManagerNodes),
             Schemas = case (ChecksumSchema_1 /= ChecksumSchema_2 andalso
                             ChecksumSchema_2 > 0) of
@@ -130,12 +130,12 @@ code_change(_OldVsn, State, _Extra) ->
 %%--------------------------------------------------------------------
 %%% INNER FUNCTIONS
 %%--------------------------------------------------------------------
-%% @doc Retrieve checksum of schema-table from svdb-manager(s)
+%% @doc Retrieve checksum of schema-table from savanna-manager(s)
 %% @private
 get_tbl_schema_checksum([]) ->
     -1;
 get_tbl_schema_checksum([Node|Rest]) ->
-    case leo_rpc:call(Node, svdbc_tbl_schema, checksum, []) of
+    case leo_rpc:call(Node, svc_tbl_schema, checksum, []) of
         {badrpc,_Cause} ->
             get_tbl_schema_checksum(Rest);
         timeout ->
@@ -149,7 +149,7 @@ get_tbl_schema_checksum([Node|Rest]) ->
 sync_tbl_schema([]) ->
     [];
 sync_tbl_schema([Node|Rest]) ->
-    case leo_rpc:call(Node, svdbc_tbl_schema, all, []) of
+    case leo_rpc:call(Node, svc_tbl_schema, all, []) of
         {ok, Schemas} ->
             case update_tbl_schema(Schemas) of
                 ok -> Schemas;
@@ -165,7 +165,7 @@ sync_tbl_schema([Node|Rest]) ->
 update_tbl_schema([]) ->
     ok;
 update_tbl_schema([Schema|Rest]) ->
-    case svdbc_tbl_schema:update(Schema) of
+    case svc_tbl_schema:update(Schema) of
         ok ->
             update_tbl_schema(Rest);
         Error ->
