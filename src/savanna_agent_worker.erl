@@ -69,8 +69,8 @@ init([SyncInterval, ManagerNodes]) ->
     {ok, #state{sync_interval = SyncInterval,
                 managers      = ManagerNodes}, SyncInterval}.
 
-handle_call({status}, _From, State) ->
-    {reply, {ok, []}, State};
+handle_call({status}, _From, #state{sync_interval = SyncInterval} = State) ->
+    {reply, {ok, []}, State, SyncInterval};
 
 handle_call(stop, _From, State) ->
     {stop, shutdown, ok, State}.
@@ -87,7 +87,6 @@ handle_cast(_Msg, State) ->
 %%     {noreply, State};
 handle_info(timeout, State=#state{sync_interval = SyncInterval,
                                   managers = ManagerNodes}) ->
-    ?debugVal({timeout, SyncInterval, ManagerNodes}),
     case ManagerNodes of
         [] ->
             void;
@@ -108,8 +107,8 @@ handle_info(timeout, State=#state{sync_interval = SyncInterval,
             sync_columns(NotMatchSchemas)
     end,
     {noreply, State, SyncInterval};
-handle_info(_Info, State) ->
-    {noreply, State}.
+handle_info(_Info, #state{sync_interval = SyncInterval} = State) ->
+    {noreply, State, SyncInterval}.
 
 
 %% Function: terminate(Reason, State) -> void()

@@ -28,17 +28,7 @@
 
 %% Macro
 %%
--define(env_table_replica_of_type(),
-        case application:get_env('savanna_agent', 'table_replica_of_type') of
-            undefined ->
-                ram_copies;
-            {ok, _EnvTblReplicaOfType} ->
-                case is_list(_EnvTblReplicaOfType) of
-                    true  -> list_to_atom(_EnvTblReplicaOfType);
-                    false -> _EnvTblReplicaOfType
-                end
-        end).
-
+%% @doc Retrieve interval of synchronization
 -define(env_table_sync_interval(),
         case application:get_env('savanna_agent', 'table_sync_interval') of
             undefined ->
@@ -47,6 +37,7 @@
                 _EnvTblSyncInterval
         end).
 
+%% @doc Retrieve savannadb's manager nodes
 -define(env_svdb_manager_nodes(),
         case application:get_env('savanna_agent', 'managers') of
             undefined ->
@@ -54,4 +45,4 @@
             {ok, _EnvManagerNodes} ->
                 _EnvManagerNodes
         end).
-        
+

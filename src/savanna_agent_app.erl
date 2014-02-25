@@ -34,18 +34,7 @@
 %% ===================================================================
 
 start(_StartType, _StartArgs) ->
-    catch mnesia:start(),
-    Ret = savanna_agent_sup:start_link(),
-    after_proc(Ret).
+    savanna_agent_sup:start_link().
 
 stop(_State) ->
     ok.
-
-
-%% @private
-after_proc({ok,_Pid} = Ret) ->
-    %% Create schema-tables
-    Type = ?env_table_replica_of_type(),
-    {atomic,ok} = svc_tbl_schema:create_table(Type, [node()]),
-    {atomic,ok} = svc_tbl_column:create_table(Type, [node()]),
-    Ret.
