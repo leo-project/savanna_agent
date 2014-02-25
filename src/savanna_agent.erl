@@ -21,7 +21,7 @@
 %%======================================================================
 -module(savanna_agent).
 
--export([]).
+-export([create_tables/2]).
 
 -include("savanna_agent.hrl").
 -include_lib("eunit/include/eunit.hrl").
@@ -30,6 +30,16 @@
 %% ===================================================================
 %% API
 %% ===================================================================
+%% @doc Create stat's tables
+%%
+-spec(create_tables(disc_copies|ram_copies, list(atom())) ->
+             ok).
+create_tables(MnesiaDiscType, Nodes) ->
+    _ = mnesia:start(),
+    {atomic,ok} = svc_tbl_schema:create_table(MnesiaDiscType, Nodes),
+    {atomic,ok} = svc_tbl_column:create_table(MnesiaDiscType, Nodes),
+    {atomic,ok} = svc_tbl_metric_group:create_table(MnesiaDiscType, Nodes),
+    ok.
 
 
 %% ===================================================================
