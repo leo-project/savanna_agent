@@ -45,12 +45,12 @@ start_link() ->
 %% ===================================================================
 init([]) ->
     Children = [
-                {folsom,
-                 {folsom_sup, start_link, []},
+                {savanna_commons_sup,
+                 {savanna_commons_sup, start_link, []},
                  permanent,
                  2000,
                  supervisor,
-                 [folsom]},
+                 [savanna_commons_sup]},
 
                 {savanna_agent_worker,
                  {savanna_agent_worker, start_link,
