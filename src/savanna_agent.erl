@@ -21,7 +21,9 @@
 %%======================================================================
 -module(savanna_agent).
 
--export([create_tables/2]).
+-export([start/2,
+         create_metrics/4,
+         notify/3]).
 
 -include("savanna_agent.hrl").
 -include_lib("eunit/include/eunit.hrl").
@@ -30,16 +32,32 @@
 %% ===================================================================
 %% API
 %% ===================================================================
-%% @doc Create stat's tables
+%% @doc Create the tables for the metrics, then launch the agent
 %%
--spec(create_tables(disc_copies|ram_copies, list(atom())) ->
-             ok).
-create_tables(MnesiaDiscType, Nodes) ->
+-spec(start(ram_copies|disc_copies, list(atom())) ->
+             ok | {error, any()}).
+start(MnesiaDiscType, Nodes) ->
     _ = mnesia:start(),
     {atomic,ok} = svc_tbl_schema:create_table(MnesiaDiscType, Nodes),
     {atomic,ok} = svc_tbl_column:create_table(MnesiaDiscType, Nodes),
     {atomic,ok} = svc_tbl_metric_group:create_table(MnesiaDiscType, Nodes),
-    ok.
+    application:start(savanna_agent).
+
+
+%% @doc Create a new metrics or histgram by the schema
+%%
+-spec(create_metrics(atom(), atom(), pos_integer(), atom()) ->
+             ok | {error, any()}).
+create_metrics(Schema, MetricGroup, Window, Notifier) ->
+    savanna_commons:create_metrics_by_schema(Schema, MetricGroup, Window, Notifier).
+
+
+%% @doc Notify an event with a schema and a key
+%%
+-spec(notify(atom(), atom(), any()) ->
+             ok | {error, any()}).
+notify(MetricGroup, Key, Event) ->
+    savanna_commons:notify(MetricGroup, {Key, Event}).
 
 
 %% ===================================================================
