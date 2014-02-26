@@ -91,7 +91,7 @@ handle_info(timeout, #state{sync_interval = SyncInterval,
         [] ->
             void;
         _ ->
-            %% Check and Sync schema-table
+            %% Check and Sync schema-table(s)
             ChecksumSchema_1 = svc_tbl_schema:checksum(),
             ChecksumSchema_2 = get_tbl_schema_checksum(ManagerNodes),
             case (ChecksumSchema_1 /= ChecksumSchema_2 andalso
@@ -101,6 +101,9 @@ handle_info(timeout, #state{sync_interval = SyncInterval,
                 false ->
                     ok
             end
+            
+            %% @TODO
+            %% Check and Sync savannadb's member(s)            
     end,
     {noreply, State, SyncInterval};
 handle_info(_Info, #state{sync_interval = SyncInterval} = State) ->

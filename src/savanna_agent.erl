@@ -20,8 +20,10 @@
 %%
 %%======================================================================
 -module(savanna_agent).
+-author('Yosuke Hara').
 
 -export([start/2,
+         create_metrics/3,
          create_metrics/4,
          notify/3]).
 
@@ -46,6 +48,12 @@ start(MnesiaDiscType, Nodes) ->
 
 %% @doc Create a new metrics or histgram by the schema
 %%
+-spec(create_metrics(atom(), atom(), pos_integer()) ->
+             ok | {error, any()}).
+create_metrics(Schema, MetricGroup, Window) ->
+    Notifier = 'savanna_agent_notifier',
+    create_metrics(Schema, MetricGroup, Window, Notifier).
+
 -spec(create_metrics(atom(), atom(), pos_integer(), atom()) ->
              ok | {error, any()}).
 create_metrics(Schema, MetricGroup, Window, Notifier) ->

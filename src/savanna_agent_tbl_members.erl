@@ -28,7 +28,7 @@
 
 %% API
 -export([create_table/2,
-         all/0, get/1,
+         all/0, get/1, find_by_state/1,
          update/1, delete/1,
          checksum/0, size/0
         ]).
@@ -77,7 +77,7 @@ all() ->
     end.
 
 
-%% @doc Retrieve a schema by name
+%% @doc Retrieve a member by name
 %%
 -spec(get(atom()) ->
              {ok, #member{}} | not_found | {error, any()}).
@@ -100,7 +100,31 @@ get(Node) ->
     end.
 
 
-%% @doc Modify a schema
+%% @doc Retrieve members by status
+%%
+-spec(find_by_state(atom()) ->
+             {ok, #member{}} | not_found | {error, any()}).
+find_by_state(State) ->
+    case catch mnesia:table_info(?TBL_NAME, all) of
+        {'EXIT', _Cause} ->
+            {error, ?ERROR_MNESIA_NOT_START};
+        _ ->
+            F = fun() ->
+                        Q1 = qlc:q([X || X <- mnesia:table(?TBL_NAME),
+                                         X#member.state == State]),
+                        Q2 = qlc:sort(Q1, [{order, ascending}]),
+                        qlc:e(Q2)
+                end,
+            case leo_mnesia:read(F) of
+                {ok, Members} ->
+                    {ok, Members};
+                Other ->
+                    Other
+            end
+    end.
+
+
+%% @doc Modify a member
 %%
 -spec(update(#member{}) ->
              ok | {error, any()}).
@@ -114,7 +138,7 @@ update(Member) ->
     end.
 
 
-%% @doc Remove a schema
+%% @doc Remove a member
 %%
 -spec(delete(atom()) ->
              ok | {error, any()}).

@@ -27,6 +27,7 @@
 -type(sva_managers() :: list(atom())).
 
 -define(TBL_SVDB_MEMBERS, 'svdb_members').
+-define(DEF_MAX_FAIL_COUNT, 3).
 
 
 %% Record

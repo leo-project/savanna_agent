@@ -67,8 +67,11 @@ suite() ->
     ?assertEqual(3, length(Ret_1)),
     ?assertEqual(Ret_2, Member_1),
 
+    {ok, Ret_3} = savanna_agent_tbl_members:find_by_state('running'),
+    ?assertEqual(2, length(Ret_3)),
+
     ok = savanna_agent_tbl_members:delete(node()),
     not_found = savanna_agent_tbl_members:get(node()),
-    {ok, Ret_3} = savanna_agent_tbl_members:all(),
-    ?assertEqual(2, length(Ret_3)),
+    {ok, Ret_4} = savanna_agent_tbl_members:all(),
+    ?assertEqual(2, length(Ret_4)),
     ok.
