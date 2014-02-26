@@ -2,7 +2,7 @@
 %%
 %% LeoProject - Savanna Agent
 %%
-%% Copyright (c) 2013-2014 Rakuten, Inc.
+%% Copyright (c) 2014 Rakuten, Inc.
 %%
 %% This file is provided to you under the Apache License,
 %% Version 2.0 (the "License"); you may not use this file
@@ -75,8 +75,8 @@ handle_call({status}, _From, #state{sync_interval = SyncInterval} = State) ->
 handle_call(stop, _From, State) ->
     {stop, shutdown, ok, State}.
 
-handle_cast(_Msg, State) ->
-    {noreply, State}.
+handle_cast(_Msg, #state{sync_interval = SyncInterval} = State) ->
+    {noreply, State, SyncInterval}.
 
 
 %% Function: handle_info(Info, State) -> {noreply, State}          |
@@ -85,8 +85,8 @@ handle_cast(_Msg, State) ->
 %% Description: Handling all non call/cast messages
 %% handle_info({_Label, {_From, MRef}, get_modules}, State) ->
 %%     {noreply, State};
-handle_info(timeout, State=#state{sync_interval = SyncInterval,
-                                  managers = ManagerNodes}) ->
+handle_info(timeout, #state{sync_interval = SyncInterval,
+                            managers = ManagerNodes} = State) ->
     case ManagerNodes of
         [] ->
             void;
@@ -94,17 +94,13 @@ handle_info(timeout, State=#state{sync_interval = SyncInterval,
             %% Check and Sync schema-table
             ChecksumSchema_1 = svc_tbl_schema:checksum(),
             ChecksumSchema_2 = get_tbl_schema_checksum(ManagerNodes),
-            Schemas = case (ChecksumSchema_1 /= ChecksumSchema_2 andalso
-                            ChecksumSchema_2 > 0) of
-                          true ->
-                              sync_tbl_schema(ManagerNodes);
-                          false ->
-                              []
-                      end,
-
-            %% Check and Sync column-table
-            NotMatchSchemas = check_checksum_of_columns(Schemas),
-            sync_columns(NotMatchSchemas)
+            case (ChecksumSchema_1 /= ChecksumSchema_2 andalso
+                  ChecksumSchema_2 > 0) of
+                true ->
+                    sync_tbl_schema(ManagerNodes);
+                false ->
+                    ok
+            end
     end,
     {noreply, State, SyncInterval};
 handle_info(_Info, #state{sync_interval = SyncInterval} = State) ->
@@ -146,7 +142,7 @@ get_tbl_schema_checksum([Node|Rest]) ->
 %% @doc Synchronize schema-table
 %% @private
 sync_tbl_schema([]) ->
-    [];
+    ok;
 sync_tbl_schema([Node|Rest]) ->
     case leo_rpc:call(Node, svc_tbl_schema, all, []) of
         {ok, Schemas} ->
@@ -170,19 +166,3 @@ update_tbl_schema([Schema|Rest]) ->
         Error ->
             Error
     end.
-
-
-%% @doc Check checksum of column-table
-%% @private
-check_checksum_of_columns([]) ->
-    ok;
-check_checksum_of_columns([_Schema|_Rest]) ->
-    ok.
-
-
-%% @doc Synchronize column-table`
-%% @private
-sync_columns([]) ->
-    ok;
-sync_columns([_Schema|_Rest]) ->
-    ok.
