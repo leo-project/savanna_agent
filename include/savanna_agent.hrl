@@ -26,6 +26,18 @@
 
 -type(sva_managers() :: list(atom())).
 
+-define(TBL_SVDB_MEMBERS, 'svdb_members').
+
+
+%% Record
+%%
+-record(member,
+        {node                 :: atom(),        %% actual node-name
+         ip = "0.0.0.0"       :: string(),      %% ip-address
+         port  = 13075        :: pos_integer(), %% port-number
+         state = null         :: atom()         %% current-status
+        }).
+
 %% Macro
 %%
 %% @doc Retrieve interval of synchronization
