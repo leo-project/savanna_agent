@@ -41,7 +41,7 @@ suite_test_() ->
 
 suite() ->
     %% Preparation
-    ok = savanna_agent:start(ram_copies, [node()]),
+    ok = savanna_agent:start(ram_copies),
     SchemaName = 'bucket',
     ok = svc_tbl_schema:update(#sv_schema{name = SchemaName,
                                           created_at = leo_date:now()}),

@@ -97,7 +97,7 @@ handle_info(timeout, #state{sync_interval = SyncInterval,
             case (ChecksumSchema_1 /= ChecksumSchema_2 andalso
                   ChecksumSchema_2 > 0) of
                 true ->
-                    sync_tbl_schema(ManagerNodes);
+                    savanna_agent:sync_schemas(ManagerNodes);
                 false ->
                     ok
             end
@@ -140,32 +140,4 @@ get_tbl_schema_checksum([Node|Rest]) ->
             get_tbl_schema_checksum(Rest);
         Checksum ->
             Checksum
-    end.
-
-%% @doc Synchronize schema-table
-%% @private
-sync_tbl_schema([]) ->
-    ok;
-sync_tbl_schema([Node|Rest]) ->
-    case leo_rpc:call(Node, svc_tbl_schema, all, []) of
-        {ok, Schemas} ->
-            case update_tbl_schema(Schemas) of
-                ok -> Schemas;
-                _ -> []
-            end;
-        _ ->
-            sync_tbl_schema(Rest)
-    end.
-
-
-%% @doc Update schema-table
-%% @private
-update_tbl_schema([]) ->
-    ok;
-update_tbl_schema([Schema|Rest]) ->
-    case svc_tbl_schema:update(Schema) of
-        ok ->
-            update_tbl_schema(Rest);
-        Error ->
-            Error
     end.

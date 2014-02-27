@@ -22,10 +22,13 @@
 -module(savanna_agent).
 -author('Yosuke Hara').
 
--export([start/2,
+-export([start/1,
          create_metrics/3,
          create_metrics/4,
-         notify/3]).
+         notify/3,
+         set_managers/1,
+         sync_schemas/0, sync_schemas/1
+        ]).
 
 -include("savanna_agent.hrl").
 -include_lib("eunit/include/eunit.hrl").
@@ -36,10 +39,11 @@
 %% ===================================================================
 %% @doc Create the tables for the metrics, then launch the agent
 %%
--spec(start(ram_copies|disc_copies, list(atom())) ->
+-spec(start(ram_copies|disc_copies) ->
              ok | {error, any()}).
-start(MnesiaDiscType, Nodes) ->
+start(MnesiaDiscType) ->
     _ = mnesia:start(),
+    Nodes = [erlang:node()],
     {atomic,ok} = svc_tbl_schema:create_table(MnesiaDiscType, Nodes),
     {atomic,ok} = svc_tbl_column:create_table(MnesiaDiscType, Nodes),
     {atomic,ok} = svc_tbl_metric_group:create_table(MnesiaDiscType, Nodes),
@@ -68,6 +72,55 @@ notify(MetricGroup, Key, Event) ->
     savanna_commons:notify(MetricGroup, {Key, Event}).
 
 
+%% @doc Set savanna-manager's nodes
+%%
+-spec(set_managers(list(atom())) ->
+             ok | {error, any()}).
+set_managers(ManagerNodes) ->
+    application:set_env('savanna_agent', 'managers', ManagerNodes).
+
+
+%% @doc Synchronize the schemas
+%%
+-spec(sync_schemas() ->
+             ok | {error, any()}).
+sync_schemas() ->
+    sync_schemas(?env_svdb_manager_nodes()).
+
+-spec(sync_schemas(list(atom())) ->
+             ok | {error, any()}).
+sync_schemas(Managers) ->
+    sync_tbl_schema(Managers).
+
+
 %% ===================================================================
 %% Inner Functions
 %% ===================================================================
+%% @doc Synchronize schema-table
+%% @private
+sync_tbl_schema([]) ->
+    ok;
+sync_tbl_schema([Node|Rest]) ->
+    case leo_rpc:call(Node, svc_tbl_schema, all, []) of
+        {ok, Schemas} ->
+            case update_tbl_schema(Schemas) of
+                ok -> Schemas;
+                _ -> []
+            end;
+        _ ->
+            sync_tbl_schema(Rest)
+    end.
+
+
+%% @doc Update schema-table
+%% @private
+update_tbl_schema([]) ->
+    ok;
+update_tbl_schema([Schema|Rest]) ->
+    case svc_tbl_schema:update(Schema) of
+        ok ->
+            update_tbl_schema(Rest);
+        Error ->
+            Error
+    end.
+
