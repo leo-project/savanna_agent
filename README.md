@@ -1,7 +1,7 @@
 savannadb_agent
 ===============
 
-An original agent of `SavannaDB', which is able to easily retrieve metrics and statistics for Erlang's apllications.
+An original agent of `SavannaDB`, which is able to easily retrieve metrics and statistics for Erlang's apllications.
 
 
 ## Usage
