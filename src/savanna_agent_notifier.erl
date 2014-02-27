@@ -54,8 +54,7 @@ notify(MetricGroup, {Key, Value}, Times) ->
                    []
            end,
 
-    %% @TODO - Transfer calculated statistics/metrics
-    ?debugVal({Node, MetricGroup, {Key, Value}}),
+    %% Transfer calculated statistics/metrics
     case Node of
         [] ->
             notify(MetricGroup, {Key, Value}, ?DEF_MAX_FAIL_COUNT);
