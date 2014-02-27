@@ -35,7 +35,7 @@ suite_test_() ->
              ok
      end,
      [{"test all functions",
-       {timeout, 120, fun suite/0}}
+       {timeout, 300, fun suite/0}}
      ]}.
 
 
@@ -59,13 +59,21 @@ suite() ->
                                           created_at = leo_date:now()}),
     %% Create metrics
     ok = savanna_agent:create_metrics(SchemaName, 'bucket_test', 30),
-    ok = put_events(1000),
+    ok = put_events(3000),
     ok.
 
 put_events(0) ->
+    ?debugVal("DONE"),
     ok;
 put_events(Index) ->
-    ok = timer:sleep(erlang:phash2(leo_date:now(),250)),
+    MinDelay = 10,
+    Delay_1 = erlang:phash2(leo_date:now(),250),
+    Delay_2 = case Delay_1 < MinDelay of
+                  true  -> MinDelay;
+                  false -> Delay_1
+              end,
+
+    ok = timer:sleep(Delay_2),
     ok = savanna_agent:notify('bucket_test','col_1', 1),
     ok = savanna_agent:notify('bucket_test','col_2', erlang:memory(total)),
     put_events(Index - 1).

@@ -25,6 +25,7 @@
 -behaviour(svc_notify_behaviour).
 
 -include("savanna_agent.hrl").
+-include_lib("savanna_commons/include/savanna_commons.hrl").
 -include_lib("eunit/include/eunit.hrl").
 
 %% callback
@@ -40,33 +41,45 @@
 notify(MetricGroup, {Key, Value}) ->
     notify(MetricGroup, {Key, Value}, 1).
 
-notify(MetricGroup, {Key, Value}, ?DEF_MAX_FAIL_COUNT) ->
+notify(_MetricGroup, {_Key,_Value}, ?DEF_MAX_FAIL_COUNT) ->
     %% @TODO enqueue a fail message
-    ?debugVal({MetricGroup, {Key, Value}}),
     ok;
-notify(MetricGroup, {Key, Value},_Times) ->
+notify(MetricGroup, {Key, Value}, Times) ->
     %% Retrieve the destination node(s)
     Node = case savanna_agent_tbl_members:find_by_state('running') of
                {ok, Members} ->
-                   ?debugVal(Members),
                    Len = length(Members),
                    lists:nth(erlang:phash2(leo_date:now(), Len) + 1, Members);
                _ ->
                    []
            end,
 
-    %% Transfer calculated statistics/metrics
-    ?debugVal({MetricGroup, {Key, Value}}),
+    %% @TODO - Transfer calculated statistics/metrics
+    ?debugVal({Node, MetricGroup, {Key, Value}}),
     case Node of
         [] ->
             notify(MetricGroup, {Key, Value}, ?DEF_MAX_FAIL_COUNT);
         _ ->
-            %% @TODO transfer a message
-            %% case leo_rpc:call(Node, savannadb, notify, [MetricGroup, {Key, Value}]) of
-            %%     ok ->
-            %%         ok;
-            %%     _ ->
-            %%         notify(MetricGroup, {Key, Value}, Times+1)
-            %% end
-            ok
+            case notify_1(Node, MetricGroup, Key, Value) of
+                ok ->
+                    ok;
+                _ ->
+                    notify(MetricGroup, {Key, Value}, Times + 1)
+            end
+    end.
+
+
+%% @private
+notify_1(Node, MetricGroup, Key, Value) ->
+    case svc_tbl_metric_group:get(MetricGroup) of
+        {ok, #sv_metric_group{schema_name = Schema}} ->
+            case leo_rpc:call(Node, savannadb, notify,
+                              [Schema, MetricGroup, {Key, Value}]) of
+                ok ->
+                    ok;
+                _ ->
+                    {error, ?ERROR_COULD_NOT_GET_SCHEMA}
+            end;
+        _ ->
+            {error, ?ERROR_COULD_NOT_TRANSFER_MSG}
     end.

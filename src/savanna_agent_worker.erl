@@ -101,9 +101,9 @@ handle_info(timeout, #state{sync_interval = SyncInterval,
                 false ->
                     ok
             end
-            
+
             %% @TODO
-            %% Check and Sync savannadb's member(s)            
+            %% Check and Sync savannadb's member(s)
     end,
     {noreply, State, SyncInterval};
 handle_info(_Info, #state{sync_interval = SyncInterval} = State) ->
