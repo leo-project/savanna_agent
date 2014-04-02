@@ -29,16 +29,18 @@
 -include_lib("eunit/include/eunit.hrl").
 
 %% callback
--export([notify/2]).
+-export([notify/1]).
 
 
 %%--------------------------------------------------------------------
 %% Callback
 %%--------------------------------------------------------------------
 %% @doc
--spec(notify(atom(), {atom(),any()}) ->
+-spec(notify(#sv_result{}) ->
              ok | {error, any()}).
-notify(MetricGroup, {Key, Value}) ->
+notify(#sv_result{metric_group_name = MetricGroup,
+                  col_name = Key,
+                  result = Value}) ->
     notify(MetricGroup, {Key, Value}, 1).
 
 notify(_MetricGroup, {_Key,_Value}, ?DEF_MAX_FAIL_COUNT) ->

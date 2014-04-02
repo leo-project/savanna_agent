@@ -31,6 +31,7 @@
         ]).
 
 -include("savanna_agent.hrl").
+-include_lib("savanna_commons/include/savanna_commons.hrl").
 -include_lib("eunit/include/eunit.hrl").
 
 
@@ -61,7 +62,19 @@ create_metrics(Schema, MetricGroup, Window) ->
 -spec(create_metrics(atom(), atom(), pos_integer(), atom()) ->
              ok | {error, any()}).
 create_metrics(Schema, MetricGroup, Window, Notifier) ->
-    savanna_commons:create_metrics_by_schema(Schema, MetricGroup, Window, Notifier).
+    Step = case Window of
+               ?SV_WINDOW_10S -> ?SV_STEP_1M;
+               ?SV_WINDOW_30S -> ?SV_STEP_1M;
+               ?SV_WINDOW_1M  -> ?SV_STEP_1M;
+               ?SV_WINDOW_5M  -> ?SV_STEP_5M;
+               _ -> ?SV_STEP_5M
+           end,
+    create_metrics(Schema, MetricGroup, Window, Step, Notifier).
+
+-spec(create_metrics(atom(), atom(), pos_integer(), pos_integer(), atom()) ->
+             ok | {error, any()}).
+create_metrics(Schema, MetricGroup, Window, Step, Notifier) ->
+    savanna_commons:create_metrics_by_schema(Schema, MetricGroup, Window, Step, Notifier).
 
 
 %% @doc Notify an event with a schema and a key

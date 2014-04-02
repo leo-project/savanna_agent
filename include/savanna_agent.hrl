@@ -28,8 +28,6 @@
 
 -define(TBL_SVDB_MEMBERS, 'svdb_members').
 -define(DEF_MAX_FAIL_COUNT, 3).
-
--define(ERROR_COULD_NOT_GET_SCHEMA,   "[ERROR]Could not get a schema").
 -define(ERROR_COULD_NOT_TRANSFER_MSG, "[ERROR]Could not transfer a message").
 
 
