@@ -103,37 +103,9 @@ sync_schemas() ->
 -spec(sync_schemas(list(atom())) ->
              ok | {error, any()}).
 sync_schemas(Managers) ->
-    sync_tbl_schema(Managers).
+    savanna_commons:sync_schemas(Managers).
 
 
 %% ===================================================================
 %% Inner Functions
 %% ===================================================================
-%% @doc Synchronize schema-table
-%% @private
-sync_tbl_schema([]) ->
-    ok;
-sync_tbl_schema([Node|Rest]) ->
-    case leo_rpc:call(Node, svc_tbl_schema, all, []) of
-        {ok, Schemas} ->
-            case update_tbl_schema(Schemas) of
-                ok -> Schemas;
-                _ -> []
-            end;
-        _ ->
-            sync_tbl_schema(Rest)
-    end.
-
-
-%% @doc Update schema-table
-%% @private
-update_tbl_schema([]) ->
-    ok;
-update_tbl_schema([Schema|Rest]) ->
-    case svc_tbl_schema:update(Schema) of
-        ok ->
-            update_tbl_schema(Rest);
-        Error ->
-            Error
-    end.
-

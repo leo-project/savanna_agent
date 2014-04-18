@@ -39,14 +39,16 @@
 -spec(notify(#sv_result{}) ->
              ok | {error, any()}).
 notify(#sv_result{metric_group_name = MetricGroup,
+                  adjusted_step = DateTime,
                   col_name = Key,
                   result = Value}) ->
-    notify(MetricGroup, {Key, Value}, 1).
+    notify(MetricGroup, DateTime, {Key, Value}, 1).
 
-notify(_MetricGroup, {_Key,_Value}, ?DEF_MAX_FAIL_COUNT) ->
+%% @private
+notify(_MetricGroup, _DateTime, _KeyAndVal, ?DEF_MAX_FAIL_COUNT) ->
     %% @TODO enqueue a fail message
     ok;
-notify(MetricGroup, {Key, Value}, Times) ->
+notify(MetricGroup, DateTime, {Key, Value}, Times) ->
     %% Retrieve the destination node(s)
     Node = case savanna_agent_tbl_members:find_by_state('running') of
                {ok, Members} ->
@@ -59,23 +61,22 @@ notify(MetricGroup, {Key, Value}, Times) ->
     %% Transfer calculated statistics/metrics
     case Node of
         [] ->
-            notify(MetricGroup, {Key, Value}, ?DEF_MAX_FAIL_COUNT);
+            notify(MetricGroup, DateTime, {Key, Value}, ?DEF_MAX_FAIL_COUNT);
         _ ->
-            case notify_1(Node, MetricGroup, Key, Value) of
+            case notify_1(Node, MetricGroup, DateTime, Key, Value) of
                 ok ->
                     ok;
                 _ ->
-                    notify(MetricGroup, {Key, Value}, Times + 1)
+                    notify(MetricGroup, DateTime, {Key, Value}, Times + 1)
             end
     end.
 
-
 %% @private
-notify_1(Node, MetricGroup, Key, Value) ->
+notify_1(Node, MetricGroup, DateTime, Key, Value) ->
     case svc_tbl_metric_group:get(MetricGroup) of
         {ok, #sv_metric_group{schema_name = Schema}} ->
-            case leo_rpc:call(Node, savannadb, notify,
-                              [Schema, MetricGroup, {Key, Value}]) of
+            case leo_rpc:call(Node, savannadb_api, notify,
+                              [Schema, MetricGroup, DateTime, {Key, Value}]) of
                 ok ->
                     ok;
                 _ ->
