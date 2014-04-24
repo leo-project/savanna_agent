@@ -76,7 +76,7 @@ notify_1(Node, DateTime, MetricGroup, Key, Val) ->
         {ok, #sv_metric_group{schema_name = Schema}} ->
             case leo_rpc:call(Node, savannadb_api, notify,
                               [DateTime, Schema,
-                               MetricGroup, Key, Val]) of
+                               MetricGroup, Key, any_to_bin(Val)]) of
                 ok ->
                     ok;
                 _ ->
@@ -85,3 +85,19 @@ notify_1(Node, DateTime, MetricGroup, Key, Val) ->
         _ ->
             {error, ?ERROR_COULD_NOT_GET_SCHEMA}
     end.
+
+
+%% @doc Convert datatype to binary
+%% @private
+-spec(any_to_bin(any()) ->
+             binary()).
+any_to_bin(V) when is_binary(V) ->
+    V;
+any_to_bin(V) when is_atom(V) ->
+    list_to_binary(atom_to_list(V));
+any_to_bin(V) when is_list(V) ->
+    list_to_binary(V);
+any_to_bin(V) when is_number(V) ->
+    list_to_binary(integer_to_list(V));
+any_to_bin(V) ->
+    term_to_binary(V).
