@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 0.2.2 (May 8, 2014)
+
+* Bump savanna_commons to 0.6.3
+* Improved
+    * Refactored notify-fun in order to be able to communicate with savannadb
+
 
 ## 0.2.1 (Apr 2, 2014)
 
