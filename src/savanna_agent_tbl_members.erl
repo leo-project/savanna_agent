@@ -42,6 +42,8 @@
 %%--------------------------------------------------------------------
 %% @doc Create a table of system-configutation
 %%
+-spec(create_table(disc_copies|ram_copies, [atom()]) ->
+             {atomic, ok} | {aborted, any()}).
 create_table(Mode, Nodes) ->
     mnesia:create_table(
       ?TBL_NAME,
@@ -103,7 +105,7 @@ get(Node) ->
 %% @doc Retrieve members by status
 %%
 -spec(find_by_state(atom()) ->
-             {ok, #member{}} | not_found | {error, any()}).
+             {ok, [#member{}]} | not_found | {error, any()}).
 find_by_state(State) ->
     case catch mnesia:table_info(?TBL_NAME, all) of
         {'EXIT', _Cause} ->

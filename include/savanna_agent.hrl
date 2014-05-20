@@ -33,12 +33,12 @@
 
 %% Record
 %%
--record(member,
-        {node                 :: atom(),        %% actual node-name
-         ip = "0.0.0.0"       :: string(),      %% ip-address
-         port  = 13075        :: pos_integer(), %% port-number
-         state = null         :: atom()         %% current-status
-        }).
+-record(member, {
+          node           :: atom(),        %% actual node-name
+          ip = "0.0.0.0" :: string(),      %% ip-address
+          port  = 13075  :: pos_integer(), %% port-number
+          state = null   :: atom()         %% current-status
+         }).
 
 %% Macro
 %%

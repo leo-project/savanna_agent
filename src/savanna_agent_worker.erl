@@ -48,6 +48,8 @@
 %%--------------------------------------------------------------------
 %% Function: start_link() -> {ok,Pid} | ignore | {error,Error}
 %% Description: Starts the server
+-spec(start_link(integer(), sva_managers()) ->
+             {ok, pid()} | ignore | {error, any()}).
 start_link(SyncInterval, ManagerNodes) ->
     gen_server:start_link({local, ?MODULE}, ?MODULE,
                           [SyncInterval, ManagerNodes], []).
