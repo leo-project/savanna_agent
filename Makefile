@@ -1,6 +1,6 @@
 ## ======================================================================
 ##
-## LeoProject - SavannaDB Agent 
+## LeoProject - SavannaDB Agent
 ##
 ## Copyright (c) 2014 Rakuten, Inc.
 ##
@@ -22,6 +22,11 @@
 .PHONY: deps test
 
 REBAR := ./rebar
+APPS = erts kernel stdlib sasl crypto compiler inets mnesia public_key runtime_tools snmp syntax_tools tools xmerl webtool
+PLT_FILE = .savanna_agent_dialyzer_plt
+DOT_FILE = savanna_agent.dot
+CALL_GRAPH_FILE = savanna_agent.png
+
 all:
 	@$(REBAR) update-deps
 	@$(REBAR) get-deps
@@ -34,6 +39,21 @@ xref:
 	@$(REBAR) xref skip_deps=true
 eunit:
 	@$(REBAR) eunit skip_deps=true
+check_plt:
+	@$(REBAR) compile
+	dialyzer --check_plt --plt $(PLT_FILE) --apps $(APPS)
+build_plt:
+	@$(REBAR) compile
+	dialyzer --build_plt --output_plt $(PLT_FILE) --apps $(APPS) deps/*/ebin
+dialyzer:
+	@$(REBAR) compile
+	dialyzer --plt $(PLT_FILE) -r ebin/ --dump_callgraph $(DOT_FILE)
+doc: compile
+	@$(REBAR) doc
+callgraph: graphviz
+	dot -Tpng -o$(CALL_GRAPH_FILE) $(DOT_FILE)
+graphviz:
+	$(if $(shell which dot),,$(error "To make the depgraph, you need graphviz installed"))
 clean:
 	@$(REBAR) clean skip_deps=true
 distclean:
