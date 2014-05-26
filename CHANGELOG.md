@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 0.4.0 (May 26, 2014)
+
+* Support to execute dialyzer
+
+
 ## 0.2.2 (May 8, 2014)
 
 * Bump savanna_commons to 0.6.3
