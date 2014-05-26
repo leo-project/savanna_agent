@@ -27,14 +27,16 @@
 -include_lib("eunit/include/eunit.hrl").
 
 %% Application callbacks
--export([start/2, stop/1]).
+-export([start/2, prep_stop/1, stop/1]).
 
 %% ===================================================================
 %% Application callbacks
 %% ===================================================================
-
 start(_StartType, _StartArgs) ->
     savanna_agent_sup:start_link().
+
+prep_stop(_State) ->
+    ok.
 
 stop(_State) ->
     ok.

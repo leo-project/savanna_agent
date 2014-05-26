@@ -54,9 +54,10 @@ notify(DateTime, MetricGroup, Key, Val, Times) ->
     case savanna_agent_tbl_members:find_by_state('running') of
         {ok, Members} ->
             %% Notify a message to a destination node
-            Len  = length(Members),
-            Node = lists:nth(erlang:phash2(
-                               leo_date:now(), Len) + 1, Members),
+            Len = length(Members),
+            #member{node = Node} = lists:nth(erlang:phash2(
+                                               leo_date:now(), Len) + 1, Members),
+            
             case notify_1(Node, MetricGroup, DateTime, Key, Val) of
                 ok ->
                     ok;
