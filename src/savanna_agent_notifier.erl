@@ -41,14 +41,22 @@
 notify(#sv_result{metric_group_name = MetricGroup,
                   adjusted_step = DateTime,
                   col_name = Key,
+                  samples = [],
                   result = Value}) ->
-    notify(DateTime, MetricGroup, Key, Value, 1).
+    notify(DateTime, MetricGroup, Key, Value, 1);
+notify(#sv_result{metric_group_name = MetricGroup,
+                  adjusted_step = DateTime,
+                  col_name = Key,
+                  samples = Samples,
+                  result = Value}) ->
+    notify(DateTime, MetricGroup, Key, {Samples, Value}, 1).
+
 
 %% @private
 -spec(notify(non_neg_integer(), sv_metric(), sv_key(), any(), pos_integer()) ->
              ok).
 notify(_DateTime,_MetricGroup,_Key,_Val, ?DEF_MAX_FAIL_COUNT) ->
-    %% @TODO enqueue a fail message
+    %% @TODO: enqueue a fail message
     ok;
 notify(DateTime, MetricGroup, Key, Val, Times) ->
     %% Retrieve destination node(s)
@@ -108,5 +116,7 @@ any_to_bin(V) when is_list(V) ->
     list_to_binary(V);
 any_to_bin(V) when is_number(V) ->
     list_to_binary(integer_to_list(V));
+any_to_bin(V) when is_tuple(V) ->
+    term_to_binary(V);
 any_to_bin(V) ->
     term_to_binary(V).
