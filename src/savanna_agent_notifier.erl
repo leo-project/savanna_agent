@@ -57,7 +57,7 @@ notify(DateTime, MetricGroup, Key, Val, Times) ->
             Len = length(Members),
             #member{node = Node} = lists:nth(erlang:phash2(
                                                leo_date:now(), Len) + 1, Members),
-            
+
             case notify_1(Node, MetricGroup, DateTime, Key, Val) of
                 ok ->
                     ok;
@@ -76,7 +76,7 @@ notify_1(Node, DateTime, MetricGroup, Key, Val) ->
     case svc_tbl_metric_group:get(MetricGroup) of
         {ok, #sv_metric_group{schema_name = Schema}} ->
             case leo_rpc:call(Node, savannadb_api, notify,
-                              [DateTime, Schema,
+                              [erlang:node(), DateTime, Schema,
                                MetricGroup, Key, any_to_bin(Val)]) of
                 ok ->
                     ok;

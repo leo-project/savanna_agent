@@ -29,6 +29,6 @@
                   kernel,
                   stdlib
                  ]},
-  {mod, { savanna_agent_app, []}},
+  {mod, {savanna_agent_app, []}},
   {env, []}
  ]}.
