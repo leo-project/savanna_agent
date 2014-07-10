@@ -23,12 +23,12 @@
 {application, savanna_agent,
  [
   {description, "Savanna Agent"},
-  {vsn, "0.4.0"},
+  {vsn, "0.4.1"},
   {registered, []},
   {applications, [
                   kernel,
                   stdlib
                  ]},
-  {mod, { savanna_agent_app, []}},
+  {mod, {savanna_agent_app, []}},
   {env, []}
  ]}.
