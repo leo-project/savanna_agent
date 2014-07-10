@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 0.4.1 (July 10, 2014)
+
+* To adjust arity of notify-fun to savannadb_api's interface
+* Bump savanna_commons to 0.8.0
+
+
 ## 0.4.0 (May 26, 2014)
 
 * Support to execute dialyzer
