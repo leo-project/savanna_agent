@@ -43,22 +43,28 @@ notify(#sv_result{metric_group_name = MetricGroup,
                   col_name = Key,
                   result = Value}) ->
     notify(DateTime, MetricGroup, Key, Value, 1).
-%% notify(MetricGroup, DateTime, Key, Value, 1).
 
 %% @private
+-spec(notify(non_neg_integer(), sv_metric(), sv_key(), any(), pos_integer()) ->
+             ok).
 notify(_DateTime,_MetricGroup,_Key,_Val, ?DEF_MAX_FAIL_COUNT) ->
     %% @TODO enqueue a fail message
     ok;
 notify(DateTime, MetricGroup, Key, Val, Times) ->
     %% Retrieve destination node(s)
+    Tokens = string:tokens(lists:flatten(leo_date:date_format(DateTime)), "-: "),
+    DateTime_1 = list_to_integer(lists:append(lists:sublist(Tokens, 5))),
+    %% @DEBUG:
+    %% ?debugFmt("~p, ~p/~p, ~p~n", [DateTime_1, MetricGroup, Key, Val]),
+
     case savanna_agent_tbl_members:find_by_state('running') of
         {ok, Members} ->
             %% Notify a message to a destination node
             Len = length(Members),
-            #member{node = Node} = lists:nth(erlang:phash2(
-                                               leo_date:now(), Len) + 1, Members),
-
-            case notify_1(Node, MetricGroup, DateTime, Key, Val) of
+            #member{node = Node} = lists:nth(
+                                     erlang:phash2(
+                                       leo_date:now(), Len) + 1, Members),
+            case notify_1(Node, DateTime_1, MetricGroup, Key, Val) of
                 ok ->
                     ok;
                 _ ->
@@ -72,6 +78,8 @@ notify(DateTime, MetricGroup, Key, Val, Times) ->
 
 
 %% @private
+-spec(notify_1(atom(), non_neg_integer(), sv_metric(), sv_key(), any()) ->
+             ok | {error, any()}).
 notify_1(Node, DateTime, MetricGroup, Key, Val) ->
     case svc_tbl_metric_group:get(MetricGroup) of
         {ok, #sv_metric_group{schema_name = Schema}} ->
