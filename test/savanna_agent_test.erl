@@ -43,8 +43,8 @@ suite() ->
     %% Preparation
     ok = savanna_agent:start(ram_copies),
     SchemaName = 'bucket',
-    ok = svc_tbl_schema:update(#sv_schema{name = SchemaName,
-                                          created_at = leo_date:now()}),
+    ok = svc_tbl_schema:update(#?SV_SCHEMA{name = SchemaName,
+                                           created_at = leo_date:now()}),
     ok = svc_tbl_column:update(#?SV_COLUMN{id = {SchemaName, 'col_1'},
                                            schema_name = SchemaName,
                                            name = 'col_1',
