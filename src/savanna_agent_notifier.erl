@@ -41,15 +41,8 @@
 notify(#sv_result{metric_group_name = MetricGroup,
                   adjusted_step = DateTime,
                   col_name = Key,
-                  samples = [],
-                  result = Value}) ->
-    notify(DateTime, MetricGroup, Key, Value, 1);
-notify(#sv_result{metric_group_name = MetricGroup,
-                  adjusted_step = DateTime,
-                  col_name = Key,
-                  samples = Samples,
-                  result = Value}) ->
-    notify(DateTime, MetricGroup, Key, {Samples, Value}, 1).
+                  result = Val}) ->
+    notify(DateTime, MetricGroup, Key, Val, 1).
 
 
 %% @private
