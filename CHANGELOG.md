@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.4.2 (Aug 4, 2014)
+
+* Bump savanna_commons
+
 ## 0.4.1 (July 10, 2014)
 
 * To adjust arity of notify-fun to savannadb_api's interface
