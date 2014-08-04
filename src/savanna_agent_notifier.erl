@@ -41,14 +41,15 @@
 notify(#sv_result{metric_group_name = MetricGroup,
                   adjusted_step = DateTime,
                   col_name = Key,
-                  result = Value}) ->
-    notify(DateTime, MetricGroup, Key, Value, 1).
+                  result = Val}) ->
+    notify(DateTime, MetricGroup, Key, Val, 1).
+
 
 %% @private
 -spec(notify(non_neg_integer(), sv_metric(), sv_key(), any(), pos_integer()) ->
              ok).
 notify(_DateTime,_MetricGroup,_Key,_Val, ?DEF_MAX_FAIL_COUNT) ->
-    %% @TODO enqueue a fail message
+    %% @TODO: enqueue a fail message
     ok;
 notify(DateTime, MetricGroup, Key, Val, Times) ->
     %% Retrieve destination node(s)
@@ -85,7 +86,7 @@ notify_1(Node, DateTime, MetricGroup, Key, Val) ->
         {ok, #sv_metric_group{schema_name = Schema}} ->
             case leo_rpc:call(Node, savannadb_api, notify,
                               [erlang:node(), DateTime, Schema,
-                               MetricGroup, Key, any_to_bin(Val)]) of
+                               MetricGroup, Key, leo_misc:any_to_binary(Val)]) of
                 ok ->
                     ok;
                 _ ->
@@ -94,19 +95,3 @@ notify_1(Node, DateTime, MetricGroup, Key, Val) ->
         _ ->
             {error, ?ERROR_COULD_NOT_GET_SCHEMA}
     end.
-
-
-%% @doc Convert datatype to binary
-%% @private
--spec(any_to_bin(any()) ->
-             binary()).
-any_to_bin(V) when is_binary(V) ->
-    V;
-any_to_bin(V) when is_atom(V) ->
-    list_to_binary(atom_to_list(V));
-any_to_bin(V) when is_list(V) ->
-    list_to_binary(V);
-any_to_bin(V) when is_number(V) ->
-    list_to_binary(integer_to_list(V));
-any_to_bin(V) ->
-    term_to_binary(V).
