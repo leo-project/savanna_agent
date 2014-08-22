@@ -8,3 +8,4 @@ ebin/
 .savanna_agent_dialyzer_plt
 savanna_agent.dot
 savanna_agent.png
+.rebar
