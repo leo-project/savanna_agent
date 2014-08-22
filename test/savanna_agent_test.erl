@@ -42,18 +42,18 @@ suite_test_() ->
 suite() ->
     %% Preparation
     ok = savanna_agent:start(ram_copies),
-    SchemaName = 'bucket',
+    SchemaName = << "bucket" >>,
     ok = svc_tbl_schema:update(#?SV_SCHEMA{name = SchemaName,
                                            created_at = leo_date:now()}),
-    ok = svc_tbl_column:update(#?SV_COLUMN{id = {SchemaName, 'col_1'},
+    ok = svc_tbl_column:update(#?SV_COLUMN{id = {SchemaName, << "col_1" >>},
                                            schema_name = SchemaName,
-                                           name = 'col_1',
+                                           name = << "col_1" >>,
                                            type = ?COL_TYPE_COUNTER,
                                            constraint = [],
                                            created_at = leo_date:now()}),
-    ok = svc_tbl_column:update(#?SV_COLUMN{id = {SchemaName, 'col_2'},
+    ok = svc_tbl_column:update(#?SV_COLUMN{id = {SchemaName, << "col_2" >>},
                                            schema_name = SchemaName,
-                                           name = 'col_2',
+                                           name = << "col_2" >>,
                                            type = ?COL_TYPE_H_UNIFORM,
                                            constraint = [{?HISTOGRAM_CONS_SAMPLE, 3000}],
                                            created_at = leo_date:now()}),
@@ -74,6 +74,6 @@ put_events(Index) ->
               end,
 
     ok = timer:sleep(Delay_2),
-    ok = savanna_agent:notify('bucket_test','col_1', 1),
-    ok = savanna_agent:notify('bucket_test','col_2', erlang:memory(total)),
+    ok = savanna_agent:notify(<< "bucket_test" >>, << "col_1" >>, 1),
+    ok = savanna_agent:notify(<< "bucket_test" >>, << "col_2" >>, erlang:memory(total)),
     put_events(Index - 1).
