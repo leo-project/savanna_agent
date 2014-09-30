@@ -86,7 +86,7 @@ notify_1(Node, DateTime, MetricGroup, Key, Val) ->
         {ok, #sv_metric_group{schema_name = Schema}} ->
             case leo_rpc:call(Node, savannadb_api, notify,
                               [erlang:node(), DateTime, Schema,
-                               MetricGroup, Key, leo_misc:any_to_binary(Val)]) of
+                               MetricGroup, Key, term_to_binary(Val)]) of
                 ok ->
                     ok;
                 _ ->
@@ -94,4 +94,4 @@ notify_1(Node, DateTime, MetricGroup, Key, Val) ->
             end;
         _ ->
             {error, ?ERROR_COULD_NOT_GET_SCHEMA}
-    end.
+    end.    

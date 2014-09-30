@@ -53,13 +53,13 @@ start(MnesiaDiscType) ->
 
 %% @doc Create a new metrics or histgram by the schema
 %%
--spec(create_metrics(atom(), atom(), pos_integer()) ->
+-spec(create_metrics(binary(), binary(), pos_integer()) ->
              ok | {error, any()}).
 create_metrics(Schema, MetricGroup, Window) ->
     Notifier = 'savanna_agent_notifier',
     create_metrics(Schema, MetricGroup, Window, Notifier).
 
--spec(create_metrics(atom(), atom(), pos_integer(), atom()) ->
+-spec(create_metrics(binary(), binary(), pos_integer(), atom()) ->
              ok | {error, any()}).
 create_metrics(Schema, MetricGroup, Window, Notifier) ->
     Step = case Window of
@@ -71,7 +71,7 @@ create_metrics(Schema, MetricGroup, Window, Notifier) ->
            end,
     create_metrics(Schema, MetricGroup, Window, Step, Notifier).
 
--spec(create_metrics(atom(), atom(), pos_integer(), pos_integer(), atom()) ->
+-spec(create_metrics(binary(), binary(), pos_integer(), pos_integer(), atom()) ->
              ok | {error, any()}).
 create_metrics(Schema, MetricGroup, Window, Step, Notifier) ->
     savanna_commons:create_metrics_by_schema(Schema, MetricGroup, Window, Step, Notifier).
@@ -79,7 +79,7 @@ create_metrics(Schema, MetricGroup, Window, Step, Notifier) ->
 
 %% @doc Notify an event with a schema and a key
 %%
--spec(notify(atom(), atom(), any()) ->
+-spec(notify(binary(), binary(), any()) ->
              ok | {error, any()}).
 notify(MetricGroup, Key, Event) ->
     savanna_commons:notify(MetricGroup, {Key, Event}).
