@@ -45,9 +45,9 @@
 start(MnesiaDiscType) ->
     _ = mnesia:start(),
     Nodes = [erlang:node()],
-    {atomic,ok} = svc_tbl_schema:create_table(MnesiaDiscType, Nodes),
-    {atomic,ok} = svc_tbl_column:create_table(MnesiaDiscType, Nodes),
-    {atomic,ok} = svc_tbl_metric_group:create_table(MnesiaDiscType, Nodes),
+    ok = svc_tbl_schema:create_table(MnesiaDiscType, Nodes),
+    ok = svc_tbl_column:create_table(MnesiaDiscType, Nodes),
+    ok = svc_tbl_metric_group:create_table(MnesiaDiscType, Nodes),
     application:start(savanna_agent).
 
 
