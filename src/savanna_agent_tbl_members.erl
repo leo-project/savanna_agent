@@ -45,20 +45,27 @@
 -spec(create_table(disc_copies|ram_copies, [atom()]) ->
              {atomic, ok} | {aborted, any()}).
 create_table(Mode, Nodes) ->
-    mnesia:create_table(
-      ?TBL_NAME,
-      [{Mode, Nodes},
-       {type, set},
-       {record_name, member},
-       {attributes, record_info(fields, member)},
-       {user_properties,
-        [
-         {node,       atom,        primary},
-         {ip,         string,      false  },
-         {port,       pos_integer, false  },
-         {state,      atom,        false  }
-        ]}
-      ]).
+    case mnesia:create_table(
+           ?TBL_NAME,
+           [{Mode, Nodes},
+            {type, set},
+            {record_name, member},
+            {attributes, record_info(fields, member)},
+            {user_properties,
+             [
+              {node,       atom,        primary},
+              {ip,         string,      false  },
+              {port,       pos_integer, false  },
+              {state,      atom,        false  }
+             ]}
+           ]) of
+        {atomic, ok} ->
+            ok;
+        {aborted,{already_exists,_}} ->
+            ok;
+        {aborted,Error} ->
+            {error, Error}
+    end.
 
 
 %% @doc Retrieve all records
