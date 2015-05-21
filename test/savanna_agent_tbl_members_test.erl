@@ -39,7 +39,7 @@ suite_test_() ->
 
 
 suite() ->
-    {atomic, ok} = savanna_agent_tbl_members:create_table(ram_copies, [node()]),
+    ok = savanna_agent_tbl_members:create_table(ram_copies, [node()]),
     not_found = savanna_agent_tbl_members:all(),
     not_found = savanna_agent_tbl_members:get(node()),
 
