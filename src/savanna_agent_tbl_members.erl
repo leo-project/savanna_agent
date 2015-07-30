@@ -43,7 +43,7 @@
 %% @doc Create a table of system-configutation
 %%
 -spec(create_table(disc_copies|ram_copies, [atom()]) ->
-             {atomic, ok} | {aborted, any()}).
+             ok | {error, any()}).
 create_table(Mode, Nodes) ->
     case mnesia:create_table(
            ?TBL_NAME,
