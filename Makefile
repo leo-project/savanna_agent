@@ -23,6 +23,7 @@
 
 REBAR := ./rebar
 APPS = erts kernel stdlib sasl crypto compiler inets mnesia public_key runtime_tools snmp syntax_tools tools xmerl webtool
+LIBS = deps/savanna_commons/ebin deps/leo_commons/ebin/
 PLT_FILE = .savanna_agent_dialyzer_plt
 DOT_FILE = savanna_agent.dot
 CALL_GRAPH_FILE = savanna_agent.png
@@ -41,13 +42,13 @@ eunit:
 	@$(REBAR) eunit skip_deps=true
 check_plt:
 	@$(REBAR) compile
-	dialyzer --check_plt --plt $(PLT_FILE) --apps $(APPS)
+	dialyzer --check_plt --plt $(PLT_FILE) --apps $(APPS) $(LIBS)
 build_plt:
 	@$(REBAR) compile
 	dialyzer --build_plt --output_plt $(PLT_FILE) --apps $(APPS) deps/*/ebin
 dialyzer:
 	@$(REBAR) compile
-	dialyzer --plt $(PLT_FILE) -r ebin/ --dump_callgraph $(DOT_FILE)
+	dialyzer --plt $(PLT_FILE) -r ebin/ --dump_callgraph $(DOT_FILE) -Wrace_conditions
 doc: compile
 	@$(REBAR) doc
 callgraph: graphviz
