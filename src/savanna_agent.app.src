@@ -23,7 +23,7 @@
 {application, savanna_agent,
  [
   {description, "Savanna Agent"},
-  {vsn, "0.4.24"},
+  {vsn, "0.4.25"},
   {registered, []},
   {applications, [
                   kernel,
